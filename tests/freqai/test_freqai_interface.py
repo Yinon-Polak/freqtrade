@@ -211,7 +211,7 @@ def test_extract_data_and_train_model_Classifiers(mocker, freqai_conf, model):
     freqai.extract_data_and_train_model(new_timerange, "ADA/BTC",
                                         strategy, freqai.dk, data_load_timerange)
 
-    assert Path(freqai.dk.data_path / f"{freqai.dk.model_filename}_model.joblib").exists()
+    assert Path(freqai.dk.data_path / f"{freqai.dk.model_filename}_model.zip").exists()
     assert Path(freqai.dk.data_path / f"{freqai.dk.model_filename}_metadata.json").exists()
     assert Path(freqai.dk.data_path / f"{freqai.dk.model_filename}_trained_df.pkl").exists()
     assert Path(freqai.dk.data_path / f"{freqai.dk.model_filename}_svm_model.joblib").exists()
