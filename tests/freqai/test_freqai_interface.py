@@ -277,6 +277,21 @@ def test_start_backtesting(mocker, freqai_conf, model, num_files, strat, caplog)
     if 'test_4ac' in model:
         freqai_conf["freqaimodel_path"] = str(Path(__file__).parents[1] / "freqai" / "test_models")
 
+    if 'PyTorchMLP' in model:
+        freqai_conf['freqai']['model_training_parameters'].update({
+            "learning_rate": 3e-4,
+            "trainer_kwargs": {
+                "max_iters": 1,
+                "batch_size": 64,
+                "max_n_eval_batches": 1,
+            },
+            "model_kwargs": {
+                "hidden_dim": 32,
+                "dropout_percent": 0.2,
+                "n_layer": 1,
+            }
+        })
+
     freqai_conf.get("freqai", {}).get("feature_parameters", {}).update(
         {"indicator_periods_candles": [2]})
 
