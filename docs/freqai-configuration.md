@@ -237,9 +237,9 @@ df['&s-up_or_down'] = np.where( df["close"].shift(-100) > df["close"], 'up', 'do
 df['&s-up_or_down'] = np.where( df["close"].shift(-100) == df["close"], 'same', df['&s-up_or_down'])
 ```
 
-## Building PyTorch Models
+## PyTorch Models
 
-## Quick start
+### Quick start
 
 The easiest way to quickly run a pytorch model is with the following command:
 
@@ -250,7 +250,7 @@ freqtrade trade --config config_examples/config_freqai.example.json --strategy F
 ### Structure
 
 #### Model
-you can use any pytorch model. here is an example of logistic regression model implementation using pytorch (should be used with nn.BCELoss criterion) for classification tasks.
+You can use any pytorch model. here is an example of logistic regression model implementation using pytorch (should be used with nn.BCELoss criterion) for classification tasks.
 
 ```python
 import torch.nn as nn
