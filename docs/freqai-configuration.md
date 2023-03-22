@@ -236,3 +236,96 @@ If you want to predict multiple targets you must specify all labels in the same 
 df['&s-up_or_down'] = np.where( df["close"].shift(-100) > df["close"], 'up', 'down')
 df['&s-up_or_down'] = np.where( df["close"].shift(-100) == df["close"], 'same', df['&s-up_or_down'])
 ```
+
+## Building PyTorch Models
+
+## Quick start
+
+The easiest way to quickly run a pytorch model is with the following command:
+
+```bash
+freqtrade trade --config config_examples/config_freqai.example.json --strategy FreqaiExampleStrategy --freqaimodel PyTorchMLPRegressor --strategy-path freqtrade/templates 
+```
+
+### Structure
+
+#### Model
+you can use any pytorch model. here is an example of logistic regression model implementation using pytorch (should be used with nn.BCELoss criterion) for classification tasks.
+
+```python
+import torch.nn as nn
+import torch 
+
+class LogisticRegression(nn.Module):
+    def __init__(self, input_size: int):
+        super().__init__()
+        # Define your layers
+        self.linear = nn.Linear(input_size, 1)
+        self.activation = nn.Sigmoid()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # Define the forward pass
+        out = self.linear(x)
+        out = self.activation(out)
+        return out
+```
+
+
+#### Trainer
+The `PyTorchModelTrainer` preforms the idiomatic pytorch train loop:
+define our model, loss function, and optimizer, and then move them to the appropriate device (GPU or CPU). Inside the loop, we iterate through the batches in the dataloader, move the data to the device, compute the prediction and loss, backpropagate, and update the parameters of the model using the optimizer. 
+
+In addition, the trainer is responsible for:
+ - saving and loading the model
+ - converting the data from `pandas.DataFrame` to `torch.Tensor`. 
+
+#### Integration with Freqai module 
+Like all freqai models PyTorch models inherit `IFreqaiModel`. `IFreqaiModel` declares three abstract method: `train`, `fit` and `predict`. we implement these methods in three level of hierarchy.
+from top to bottom:
+1. BasePyTorchModel - all PyTorchModel inherit it. implements the `train` method which is responsible for general data preparation (e.g data normalization) and calling the fit method.
+2. BasePyTorch* - define a type of models such as classifier or regressor. implements the `predict` method which is responsible for preparing the data for prediction, predicting and returning the prediction in the format needed by the strategy.
+3. PyTorch*Model - define a specific implements the `train` method which is responsible for the main train flaw, this is where we initialize the trainer and model objects, specific data preparation (e.g reshaping, type conversion).
+
+This allows the user the flexibility to build new model or type of models, while being able to reuse those across different tasks.
+
+#### Entry Point
+The class that you point to in the freqtrade cli call, is the PyTorch*Model.
+For example lets look at a regression task. using a MLP Model, MSELoss criterion, and AdamW optimizer.
+
+```python
+class PyTorchMLPRegressor(BasePyTorchRegressor):
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        config = self.freqai_info.get("model_training_parameters", {})
+        self.learning_rate: float = config.get("learning_rate",  3e-4)
+        self.model_kwargs: Dict[str, Any] = config.get("model_kwargs",  {})
+        self.trainer_kwargs: Dict[str, Any] = config.get("trainer_kwargs",  {})
+
+    def fit(self, data_dictionary: Dict, dk: FreqaiDataKitchen, **kwargs) -> Any:
+        n_features = data_dictionary["train_features"].shape[-1]
+        model = PyTorchMLPModel(
+            input_dim=n_features,
+            output_dim=1,
+            **self.model_kwargs
+        )
+        model.to(self.device)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=self.learning_rate)
+        criterion = torch.nn.MSELoss()
+        init_model = self.get_init_model(dk.pair)
+        trainer = PyTorchModelTrainer(
+            model=model,
+            optimizer=optimizer,
+            criterion=criterion,
+            device=self.device,
+            init_model=init_model,
+            target_tensor_type=torch.float,
+            **self.trainer_kwargs,
+        )
+        trainer.fit(data_dictionary)
+        return trainer
+```
+
+in `PyTorchMLPRegressor` we implement the `fit` method.
+in the `fit` method we specify the training building blocks: model, optimizer, criterion and trainer.
+`PyTorchMLPRegressor` inherits `BasePyTorchRegressor` that already have a `predict` method suiting our regression tasks.
+`BasePyTorchRegressor` inherits `BasePyTorchModel` that implements the `train` method does the preprocessing suiting out task.
