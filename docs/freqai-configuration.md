@@ -241,8 +241,9 @@ df['&s-up_or_down'] = np.where( df["close"].shift(-100) == df["close"], 'same', 
 
 ### Quick start
 
-The easiest way to quickly run a pytorch model is with the following command:
+The easiest way to quickly run a pytorch model is with the following commands:
 
+For regression:
 ```bash
 freqtrade trade --config config_examples/config_freqai.example.json --strategy FreqaiExampleStrategy --freqaimodel PyTorchMLPRegressor --strategy-path freqtrade/templates 
 ```
