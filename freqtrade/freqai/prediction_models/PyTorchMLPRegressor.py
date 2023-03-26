@@ -27,7 +27,7 @@ class PyTorchMLPRegressor(BasePyTorchRegressor):
                 "trainer_kwargs": {
                     "max_iters": 5000,
                     "batch_size": 64,
-                    "max_n_eval_batches": None,
+                    "max_n_eval_batches": null,
                 },
                 "model_kwargs": {
                     "hidden_dim": 512,
