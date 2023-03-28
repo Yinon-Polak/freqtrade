@@ -38,6 +38,10 @@ USER ftuser
 RUN  pip install --user --no-cache-dir numpy \
   && pip install --user --no-cache-dir -r requirements-hyperopt.txt
 
+COPY --chown=ftuser:ftuser requirements.txt requirements-hyperopt.txt requirements-freqai.txt requirements-freqai-rl.txt requirements-dev.txt requirements-plot.txt docs/requirements-docs.txt /freqtrade/
+USER ftuser
+RUN pip install --user --no-cache-dir -r requirements-dev.txt
+
 # Copy dependencies to runtime-image
 FROM base as runtime-image
 COPY --from=python-deps /usr/local/lib /usr/local/lib
