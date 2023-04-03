@@ -48,11 +48,14 @@ class PyTorchMLPModel(nn.Module):
         self.dropout = nn.Dropout(p=dropout_percent)
 
     def forward(self, x: List[torch.Tensor]) -> torch.Tensor:
+        logger.info(f"1 - {type(x)}")
         x = x[0]
+        logger.info(f"2 - {type(x)}")
         x = self.relu(self.input_layer(x))
         x = self.dropout(x)
         x = self.blocks(x)
         x = self.output_layer(x)
+        logger.info(f"3 - {type(x)}")
         return x
 
 
