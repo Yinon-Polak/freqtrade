@@ -149,8 +149,8 @@ class PyTorchModelTrainer(PyTorchTrainerInterface):
         n_epochs = min(n_iters // n_batches, 1)
         if n_epochs <= 10:
             logger.warning(
-                f"Setting low n_epochs. {n_epochs} = n_epochs = n_iters // n_batches = {n_iters} // {n_batches}."
-                f"Please consider increasing this value `max_iters`"
+                f"Setting low n_epochs. {n_epochs} = n_epochs = n_iters // n_batches = {n_iters} // {n_batches}. "
+                f"Please consider increasing `max_iters` hyper-parameter."
             )
 
         return n_epochs
