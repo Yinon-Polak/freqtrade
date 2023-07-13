@@ -75,8 +75,8 @@ class PyTorchModelTrainer(PyTorchTrainerInterface):
 
         data_loaders_dictionary = self.create_data_loaders_dictionary(data_dictionary, splits)
         n_obs = len(data_dictionary["train_features"])
-        epochs = self.n_epochs or self.calc_n_epochs(n_obs=n_obs, batch_size=self.batch_size, n_iters=self.max_iters)
-        for epoch in range(1, epochs + 1):
+        n_epochs = self.n_epochs or self.calc_n_epochs(n_obs=n_obs, batch_size=self.batch_size, n_iters=self.max_iters)
+        for epoch in range(1, n_epochs + 1):
             for i, batch_data in enumerate(data_loaders_dictionary["train"]):
                 xb, yb = batch_data
                 xb = xb.to(self.device)
@@ -146,14 +146,14 @@ class PyTorchModelTrainer(PyTorchTrainerInterface):
         """
 
         n_batches = n_obs // batch_size
-        epochs = n_iters // n_batches
-        if epochs <= 10:
-            logger.warning("User set `max_iters` in such a way that the trainer will only perform "
-                           f" {epochs} epochs. Please consider increasing this value accordingly")
-            if epochs <= 1:
-                logger.warning("Epochs set to 1. Please review your `max_iters` value")
-                epochs = 1
-        return epochs
+        n_epochs = min(n_iters // n_batches, 1)
+        if n_epochs <= 10:
+            logger.warning(
+                f"Setting low n_epochs. {n_epochs} = n_epochs = n_iters // n_batches = {n_iters} // {n_batches}."
+                f"Please consider increasing this value `max_iters`"
+            )
+
+        return n_epochs
 
     def save(self, path: Path):
         """
