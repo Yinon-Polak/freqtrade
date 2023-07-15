@@ -104,7 +104,7 @@ def test_extract_data_and_train_model_Standard(mocker, freqai_conf, model, pca,
     freqai.dk = FreqaiDataKitchen(freqai_conf)
     freqai.dk.live = True
     freqai.dk.set_paths('ADA/BTC', 10000)
-    timerange = TimeRange.parse_timerange("20180110-20180130")
+    timerange = TimeRange.parse_timerange("20180110-20180230")
     freqai.dd.load_all_pair_histories(timerange, freqai.dk)
 
     freqai.dd.pair_dict = MagicMock()
