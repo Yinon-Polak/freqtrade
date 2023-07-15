@@ -88,6 +88,7 @@ def test_extract_data_and_train_model_Standard(mocker, freqai_conf, model, pca,
         model_save_ext = 'zip'
         pytorch_mlp_mtp = mock_pytorch_mlp_model_training_parameters()
         freqai_conf['freqai']['model_training_parameters'].update(pytorch_mlp_mtp)
+        freqai_conf['freqai']['continual_learning'] = True
         if 'Transformer' in model:
             # transformer model takes a window, unlike the MLP regressor
             freqai_conf.update({"conv_width": 10})
