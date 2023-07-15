@@ -61,9 +61,10 @@ def test_extract_data_and_train_model_Standard(mocker, freqai_conf, model, pca,
     if is_mac():
         test_tb = False
 
+    t_end = "20180425"
     model_save_ext = 'joblib'
     freqai_conf.update({"freqaimodel": model})
-    freqai_conf.update({"timerange": "20180110-20180225"})
+    freqai_conf.update({"timerange": f"20180110-{t_end}"})
     freqai_conf.update({"strategy": "freqai_test_strat"})
     freqai_conf['freqai']['feature_parameters'].update({"principal_component_analysis": pca})
     freqai_conf['freqai']['feature_parameters'].update({"use_DBSCAN_to_remove_outliers": dbscan})
@@ -89,6 +90,7 @@ def test_extract_data_and_train_model_Standard(mocker, freqai_conf, model, pca,
         pytorch_mlp_mtp = mock_pytorch_mlp_model_training_parameters()
         freqai_conf['freqai']['model_training_parameters'].update(pytorch_mlp_mtp)
         freqai_conf['freqai']['continual_learning'] = True
+        freqai_conf['freqai']['train_period_days'] = 10
         if 'Transformer' in model:
             # transformer model takes a window, unlike the MLP regressor
             freqai_conf.update({"conv_width": 10})
@@ -99,18 +101,18 @@ def test_extract_data_and_train_model_Standard(mocker, freqai_conf, model, pca,
     strategy.freqai_info = freqai_conf.get("freqai", {})
     freqai = strategy.freqai
     freqai.live = True
-    freqai.activate_tensorboard = test_tb
+    freqai.activate_tensorboard = True
     freqai.can_short = can_short
     freqai.dk = FreqaiDataKitchen(freqai_conf)
     freqai.dk.live = True
     freqai.dk.set_paths('ADA/BTC', 10000)
-    timerange = TimeRange.parse_timerange("20180110-20180225")
+    timerange = TimeRange.parse_timerange(f"20180110-{t_end}")
     freqai.dd.load_all_pair_histories(timerange, freqai.dk)
 
     freqai.dd.pair_dict = MagicMock()
 
-    data_load_timerange = TimeRange.parse_timerange("20180125-20180225")
-    new_timerange = TimeRange.parse_timerange("20180127-20180225")
+    data_load_timerange = TimeRange.parse_timerange(f"20180125-{t_end}")
+    new_timerange = TimeRange.parse_timerange(f"20180127-{t_end}")
     freqai.dk.set_paths('ADA/BTC', None)
 
     freqai.train_timer("start", "ADA/BTC")
